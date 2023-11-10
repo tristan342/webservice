@@ -62,7 +62,7 @@ class MovieController extends AbstractController
         }
 
         // Valider l'entité
-        $errors = $this->validator->validate($movie); // Use the injected validator
+        $errors = $this->validator->validate($movie);
 
         if (count($errors) > 0) {
             return $this->json(['message' => 'La validation a échoué.', 'errors' => $errors], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
@@ -72,42 +72,52 @@ class MovieController extends AbstractController
         $this->entityManager->persist($movie);
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'Movie créé avec succès.', 'id' => $movie->getId()], JsonResponse::HTTP_CREATED);
+        return $this->json(['message' => 'Filme créé avec succès.', 'id' => $movie->getId()], JsonResponse::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'app_movie_show', methods: ['GET'])]
-    public function show(Movie $movieInput): JsonResponse
+    public function show(Movie $movie): JsonResponse
     {
-        $movie = $this->movieRepository->findOneBy(['id' => $movieInput]);
         return $this->json($movie, Response::HTTP_OK);
     }
 
-    #[Route('/{id}/edit', name: 'app_movie_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Movie $movie, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_movie_edit', methods: ['PUT'])]
+    public function edit(Request $request, Movie $movie, EntityManagerInterface $entityManager): JsonResponse
     {
-        $form = $this->createForm(MovieType::class, $movie);
-        $form->handleRequest($request);
+        $data = json_decode($request->getContent(), true);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+        // Mettre à jour les propriétés de l'entité Movie
+        $movie->setTitle($data['title']);
+        $movie->setDescription($data['description']);
+        $movie->setReleaseDate(new \DateTime($data['releaseDate']));
 
-            return $this->redirectToRoute('app_movie_index', [], Response::HTTP_SEE_OTHER);
+        if (isset($data['note'])) {
+            $movie->setNote($data['note']);
+        }
+        if (isset($data['isUnderEightTeen'])) {
+            $movie->setIsUnderEightTeen($data['isUnderEightTeen']);
+        }
+        if (isset($data['category'])) {
+            $movie->setCategory($data['category']);
         }
 
-        return $this->render('movie/edit.html.twig', [
-            'movie' => $movie,
-            'form' => $form,
-        ]);
+        $errors = $this->validator->validate($movie);
+
+        if (count($errors) > 0) {
+            return $this->json(['message' => 'La validation a échoué.', 'errors' => $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Filme mis à jour avec succès.'], Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'app_movie_delete', methods: ['POST'])]
-    public function delete(Request $request, Movie $movie, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_movie_delete', methods: ['DELETE'])]
+    public function delete(Request $request, Movie $movie, EntityManagerInterface $entityManager): JsonResponse
     {
-        if ($this->isCsrfTokenValid('delete'.$movie->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($movie);
-            $entityManager->flush();
-        }
+        $entityManager->remove($movie);
+        $entityManager->flush();
 
-        return $this->redirectToRoute('app_movie_index', [], Response::HTTP_SEE_OTHER);
+        return $this->json(['message' => $movie->getTitle() . ' supprimé avec succès.'], Response::HTTP_OK);
     }
 }
