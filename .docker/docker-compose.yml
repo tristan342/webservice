@@ -1,0 +1,76 @@
+version: '3.8'
+
+networks:
+  symfony:
+    driver: bridge
+
+services:
+  app:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: webservice_app
+    volumes:
+      - ../:/var/www/html # Assurez-vous que le chemin relatif est correct par rapport au contexte
+    ports:
+      - "80:80"
+    environment:
+      - APP_ENV=prod
+    networks:
+      - symfony
+
+  apache:
+    build:
+      context: ./apache # Mettez à jour le contexte pour pointer vers le dossier où se trouve le Dockerfile pour apache
+      dockerfile: Dockerfile
+    ports:
+      - 8080:80
+    volumes:
+      - ../:/var/www/html # Assurez-vous que le chemin relatif est correct par rapport au contexte
+    depends_on:
+      - app
+    networks:
+      - symfony
+
+  db:
+    image: mysql:8.0
+    container_name: webservice_db
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: webservice_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: toor
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - symfony
+
+  php:
+    build:
+      context: ./php # Mettez à jour le contexte pour pointer vers le dossier où se trouve le Dockerfile pour php
+      dockerfile: Dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${UID:-1000}
+    volumes:
+      - ../:/var/www/html # Assurez-vous que le chemin relatif est correct par rapport au contexte
+    networks:
+      - symfony
+
+  composer:
+    build:
+      context: ./composer # Mettez à jour le contexte pour pointer vers le dossier où se trouve le Dockerfile pour composer
+      dockerfile: Dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${UID:-1000}
+    volumes:
+      - ../:/var/www/html # Assurez-vous que le chemin relatif est correct par rapport au contexte
+    working_dir: /var/www/html
+    networks:
+      - symfony
+
+volumes:
+  db_data:
