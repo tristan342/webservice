@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\MovieRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 class Movie
@@ -24,13 +25,14 @@ class Movie
     private ?\DateTimeInterface $releaseDate = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(notInRangeMessage: "La note doit être comprise entre 1 et 5.", min: 1, max: 5)]
     private ?int $note = null;
 
     #[ORM\Column(nullable: true)]
     private ?bool $isUnderEightTeen = null;
 
     #[ORM\Column(length: 255, nullable: true),
-    Assert\Choice(choices: ["action", "horror", "romance", "science fiction"], nullable: true)]
+    Assert\Choice(choices: ["action", "horror", "romance", "science fiction"])]
     private ?string $category = null;
 
     public function getId(): ?int
