@@ -12,7 +12,7 @@ class MovieFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
 
-        $genres = ['horror', 'action', 'romance', 'science fiction'];
+        $allCategories = $manager->getRepository(\App\Entity\Category::class)->findAll();
 
         for ($count = 0; $count < 20; $count++) {
             $movie = new Movie();
@@ -29,8 +29,9 @@ class MovieFixtures extends Fixture
             $randomBoolean = (bool) mt_rand(0, 1);
             $movie->setIsUnderEightTeen($randomBoolean);
 
-            $randomGenre = $genres[array_rand($genres)];
-            $movie->setCategory($randomGenre);
+            // ramdomCategory
+            $randomCategory = $allCategories[mt_rand(0, count($allCategories) - 1)];
+            $movie->addCategory($randomCategory);
 
             $manager->persist($movie);
         }

@@ -1,0 +1,20 @@
+App\Entity\Movie:
+  exclusion_policy: ALL
+  properties:
+    id:
+      expose: true
+    title:
+      expose: true
+    description:
+      expose: true
+    releaseDate:
+      expose: true
+    note:
+      expose: true
+    isUnderEightTeen:
+      expose: true
+    category:
+      expose: true
+      serialized_name: 'category'
+      groups: ['Default']
+      embedded: true
