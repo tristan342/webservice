@@ -206,13 +206,16 @@ class MovieController extends AbstractController
         return $response;
     }
 
-    #[Route('/movies/search', name: 'movie_search')]
-    public function search(Request $request, string $search): Response
+    #[Route('/search/{title?}/{description?}', name: 'movie_search', methods: ['GET'])]
+    public function search(Request $request, ?string $title = null, ?string $description = null): Response
     {
 
-        $movies = $this->movieRepository->findMovies($search);
+        if ($title === null && $description === null) {
+            $movies = $this->movieRepository->findAll();
+        } else {
+            $movies = $this->movieRepository->findMovies($title, $description);
+        }
 
-
-        return $this->json($movies);
-    }
+    return $this->json($movies);
+}
 }
