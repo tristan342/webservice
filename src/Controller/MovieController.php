@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -202,6 +204,57 @@ class MovieController extends AbstractController
         } else {
             $response = new JsonResponse($data, Response::HTTP_OK);
         }
+
+        return $response;
+    }
+
+    #Show all movies by category id
+    #[Route('/{id}/categories', name: 'movie_categories', methods: ['GET'])]
+    public function getCategoriesById(Movie $movie, Request $request): Response
+    {
+
+        $categories = $movie->getCategories();
+
+        $format = $request->getPreferredFormat();
+
+        if (!in_array($format, [JsonEncoder::FORMAT, XmlEncoder::FORMAT])) {
+            $format = JsonEncoder::FORMAT; // default to JSON
+        }
+
+        $data = $this->serializer->normalize($categories, null, [
+            AbstractNormalizer::ATTRIBUTES => ['id', 'name'],
+        ]);
+
+        $response = new Response($this->serializer->serialize($data, $format));
+        $response->headers->set('Content-Type', $request->getMimeType($format));
+
+        return $response;
+    }
+
+    #Add a category to a movie
+    #[Route('/{id}/categories', name: 'movie_add_category', methods: ['POST'])]
+    public function addCategory(Request $request, Movie $movie): Response
+    {
+        $format = $request->getPreferredFormat();
+
+        if (!in_array($format, [JsonEncoder::FORMAT, XmlEncoder::FORMAT])) {
+            $format = JsonEncoder::FORMAT; // default to JSON
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        $category = $data['category'];
+
+        $movie->addCategory($category);
+
+        $this->entityManager->flush();
+
+        $format = $request->headers->get('Accept', 'application/json');
+
+        $data = ['message' => 'Catégorie ajoutée avec succès.'];
+
+        $response = new Response($this->serializer->serialize($data, $format));
+        $response->headers->set('Content-Type', $request->getMimeType($format));
 
         return $response;
     }
