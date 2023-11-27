@@ -48,7 +48,9 @@ class MovieRepository extends ServiceEntityRepository
 
     public function findMovies(?string $title, ?string $description)
     {
-        $queryBuilder = $this->createQueryBuilder('m');
+        $queryBuilder = $this->createQueryBuilder('q');
+        $queryBuilder->select('m');
+        $queryBuilder->from(Movie::class, 'm');
 
         if ($title !== null) {
             $queryBuilder

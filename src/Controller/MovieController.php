@@ -27,9 +27,9 @@ class MovieController extends AbstractController
     private SerializerInterface $serializer;
 
     public function __construct(EntityManagerInterface $entityManager,
-                                MovieRepository $movieRepository,
-                                ValidatorInterface $validator,
-                                SerializerInterface $serializer)
+                                MovieRepository        $movieRepository,
+                                ValidatorInterface     $validator,
+                                SerializerInterface    $serializer)
     {
         $this->entityManager = $entityManager;
         $this->movieRepository = $movieRepository;
@@ -40,7 +40,14 @@ class MovieController extends AbstractController
     #[Route('/', name: 'app_movie_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $movies = $this->movieRepository->findAll();
+        $title = $request->query->get('title');
+        $description = $request->query->get('description');
+
+        if ($title === null && $description === null) {
+            $movies = $this->movieRepository->findAll();
+        } else {
+            $movies = $this->movieRepository->findMovies($title, $description);
+        }
 
         $format = $request->headers->get('Accept', 'application/json');
 
@@ -48,7 +55,7 @@ class MovieController extends AbstractController
             AbstractNormalizer::ATTRIBUTES => ['id', 'title', 'description', 'releaseDate', 'note', 'isUnderEightTeen', 'category'],
         ]);
 
-        if ($format === 'application/xml') {
+        if ($format === 'application/xml') { //TODO créer un objet type response
             $response = new Response($this->serializer->serialize($data, 'xml'), Response::HTTP_OK);
         } else {
             $response = new JsonResponse($data, Response::HTTP_OK);
@@ -80,7 +87,7 @@ class MovieController extends AbstractController
             $movie->setIsUnderEightTeen($data['isUnderEightTeen']);
         }
         if (isset($data['category'])) {
-            $movie->setCategory($data['category']);
+            $movie->setCategories($data['category']);
         }
 
         // Valider l'entité
@@ -126,6 +133,7 @@ class MovieController extends AbstractController
     #[Route('/{id}', name: 'app_movie_show', methods: ['GET'])]
     public function show(Movie $movie, Request $request): Response
     {
+        //TODO int id
         // Récupérer le format souhaité à partir de l'en-tête Accept
         $format = $request->headers->get('Accept', 'application/json');
 
@@ -161,7 +169,7 @@ class MovieController extends AbstractController
             $movie->setIsUnderEightTeen($data['isUnderEightTeen']);
         }
         if (isset($data['category'])) {
-            $movie->setCategory($data['category']);
+            $movie->setCategories($data['category']);
         }
 
         $errors = $this->validator->validate($movie);
@@ -258,17 +266,4 @@ class MovieController extends AbstractController
 
         return $response;
     }
-
-    #[Route('/search/{title?}/{description?}', name: 'movie_search', methods: ['GET'])]
-    public function search(Request $request, ?string $title = null, ?string $description = null): Response
-    {
-
-        if ($title === null && $description === null) {
-            $movies = $this->movieRepository->findAll();
-        } else {
-            $movies = $this->movieRepository->findMovies($title, $description);
-        }
-
-    return $this->json($movies);
-}
 }
