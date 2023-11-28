@@ -46,11 +46,10 @@ class MovieRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-    public function findMovies(?string $title, ?string $description)
+    public function findMovies(?string $title, ?string $description, ?int $page, int $limit = 10)
     {
-        $queryBuilder = $this->createQueryBuilder('q');
+        $queryBuilder = $this->createQueryBuilder('m');
         $queryBuilder->select('m');
-        $queryBuilder->from(Movie::class, 'm');
 
         if ($title !== null) {
             $queryBuilder
@@ -63,6 +62,15 @@ class MovieRepository extends ServiceEntityRepository
                 ->andWhere('m.description LIKE :description')
                 ->setParameter('description', '%' . $description . '%');
         }
+
+        // Calculer le décalage pour la pagination
+        $offset = $page ? ($page - 1) * $limit : 1;
+
+        // Appliquer la pagination
+        $queryBuilder
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
 
         return $queryBuilder->getQuery()->getResult();
     }

@@ -42,12 +42,9 @@ class MovieController extends AbstractController
     {
         $title = $request->query->get('title');
         $description = $request->query->get('description');
+        $page = $request->query->get('page');
 
-        if ($title === null && $description === null) {
-            $movies = $this->movieRepository->findAll();
-        } else {
-            $movies = $this->movieRepository->findMovies($title, $description);
-        }
+        $movies = $this->movieRepository->findMovies($title, $description, $page);
 
         $format = $request->headers->get('Accept', 'application/json');
 
