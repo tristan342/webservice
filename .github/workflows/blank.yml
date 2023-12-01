@@ -43,4 +43,4 @@ jobs:
       - name: Run Symfony tests
         run: ./bin/phpunit
 
-      # You can add additional steps for other tasks like linting, code analysis, etc.
+      # You can add additional steps for other tasks like linting, code analysis, etc
