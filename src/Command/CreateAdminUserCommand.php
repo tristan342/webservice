@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\Role;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -30,10 +31,10 @@ class CreateAdminUserCommand extends Command
     protected function configure()
     {
         $this
-            ->setDescription('Creates a new admin user')
-            ->setHelp('This command allows you to create an admin user')
-            ->addArgument('email', InputArgument::REQUIRED, 'The email of the admin')
-            ->addArgument('password', InputArgument::REQUIRED, 'The password of the admin');
+            ->setDescription('Cette commande vous permet de créer un nouvel utilisateur avec le rôle ADMIN.')
+            ->setHelp('Cette commande vous permet de créer un nouvel utilisateur avec le rôle ADMIN.')
+            ->addArgument('email', InputArgument::REQUIRED, 'L\'email de l\'admin')
+            ->addArgument('password', InputArgument::REQUIRED, 'Le mot de passe de l\'admin');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -41,10 +42,18 @@ class CreateAdminUserCommand extends Command
         $email = $input->getArgument('email');
         $plainPassword = $input->getArgument('password');
 
+        // On récupère le rôle admin
+        $roleAdmin = $this->entityManager->getRepository(Role::class)->findOneBy(['label' => 'ADMIN']);
+
+        // Assurez-vous que $roleAdmin est bien un objet Role et non null
+        if (!$roleAdmin) {
+            $output->writeln('Role ADMIN non trouvé.');
+            return Command::FAILURE;
+        }
         // Création de l'instance de l'utilisateur.
         $user = new User();
         $user->setEmail($email);
-        $user->setRoles(['ROLE_ADMIN']);
+        $user->setRole($roleAdmin);
 
         // Hashage du mot de passe.
         $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
@@ -55,7 +64,7 @@ class CreateAdminUserCommand extends Command
         $this->entityManager->flush();
 
         // Affichage du message de succès.
-        $output->writeln('Admin user created successfully.');
+        $output->writeln('Admin créé avec succès !');
 
         // Retourne le code de succès de la commande.
         return Command::SUCCESS;
