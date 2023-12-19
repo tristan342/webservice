@@ -33,10 +33,6 @@ class Movie
     #[ORM\Column(nullable: true)]
     private ?bool $isUnderEightTeen = null;
 
-    #[ORM\Column(length: 255, nullable: true),
-    Assert\Choice(choices: ["action", "horror", "romance", "science fiction"])]
-    private ?string $category = null;
-
     #[ORM\ManyToMany(targetEntity: Category::class, mappedBy: 'movies')]
     private Collection $categories;
 
@@ -110,24 +106,20 @@ class Movie
         return $this;
     }
 
-    public function getCategory(): ?string
-    {
-        return $this->category;
-    }
-
-    public function setCategory(?string $category): static
-    {
-        $this->category = $category;
-
-        return $this;
-    }
-
     /**
-     * @return Collection<int, Category>
+     * @return Collection
      */
     public function getCategories(): Collection
     {
         return $this->categories;
+    }
+
+    /**
+     * @param Collection $categories
+     */
+    public function setCategories(Collection $categories): void
+    {
+        $this->categories = $categories;
     }
 
     public function addCategory(Category $category): static
