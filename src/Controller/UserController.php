@@ -34,6 +34,7 @@ class UserController extends AbstractController
     }
 
     #[Route('', name: 'app_user_new', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function new(Request $request, UserPasswordHasherInterface $passwordHasher): Response
     {
         $data = json_decode($request->getContent(), true);

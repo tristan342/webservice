@@ -12,10 +12,10 @@ class RoleFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $roleUser = new Role();
-        $roleUser->setLabel('USER');
+        $roleUser->setLabel('ROLE_USER');
 
         $roleAdmin = new Role();
-        $roleAdmin->setLabel('ADMIN');
+        $roleAdmin->setLabel('ROLE_ADMIN');
 
         $manager->persist($roleUser);
         $manager->persist($roleAdmin);
