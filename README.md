@@ -31,6 +31,11 @@ docker-compose exec php bin/console doctrine:migrations:migrate
 
 # Charger les données de test (fixtures)
 docker-compose exec php bin/console doctrine:fixtures:load
+
+# Création d'un utilisateur
+php bin/console app:create-admin email@example.com password
 ```
 
 L'application est maintenant accessible à l'adresse [http://localhost:8080](http://localhost:8080).
+
+
