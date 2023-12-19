@@ -21,16 +21,44 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class UserController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
+    private UserRepository $userRepository;
     private ValidatorInterface $validator;
     private SerializerInterface $serializer;
 
     public function __construct(EntityManagerInterface $entityManager,
+                                UserRepository $userRepository,
                                 ValidatorInterface     $validator,
                                 SerializerInterface    $serializer)
     {
         $this->entityManager = $entityManager;
+        $this->userRepository = $userRepository;
         $this->validator = $validator;
         $this->serializer = $serializer;
+    }
+
+    #[Route('/', name: 'app_user_index', methods: ['GET'])]
+    public function index(UserRepository $userRepository): Response
+    {
+        return $this->render('user/index.html.twig', [
+            'users' => $userRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
+    public function show(Request $request, UserRepository $userRepository, int $id): Response
+    {
+        $user = $userRepository->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur non trouvé');
+        }
+
+        // Vous pouvez utiliser le $user pour obtenir les détails de l'utilisateur
+        // Par exemple, $user->getFirstName(), $user->getEmail(), etc.
+
+        return $this->render('user/show.html.twig', [
+            'user' => $user,
+        ]);
     }
 
     #[Route('', name: 'app_user_new', methods: ['POST'])]
@@ -54,5 +82,34 @@ class UserController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Film créé avec succès.', 'data' => $data], Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id}', name: 'app_user_edit', methods: ['PUT'])]
+    public function edit(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('user/edit.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_user_delete', methods: ['DELETE'])]
+    public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($user);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
     }
 }
