@@ -26,6 +26,9 @@ class User
     #[ORM\JoinColumn(name: "roleId", referencedColumnName: "id")]
     private ?Role $role = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $password = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -75,6 +78,18 @@ class User
     public function setRole(?Role $role): static
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(?string $password): static
+    {
+        $this->password = $password;
 
         return $this;
     }
