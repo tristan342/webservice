@@ -53,9 +53,6 @@ class UserController extends AbstractController
             throw $this->createNotFoundException('Utilisateur non trouvé');
         }
 
-        // Vous pouvez utiliser le $user pour obtenir les détails de l'utilisateur
-        // Par exemple, $user->getFirstName(), $user->getEmail(), etc.
-
         return $this->render('user/show.html.twig', [
             'user' => $user,
         ]);
@@ -81,7 +78,7 @@ class UserController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Film créé avec succès.', 'data' => $data], Response::HTTP_CREATED);
+        return new JsonResponse(['message' => 'Utilisateur créé avec succès.', 'data' => $data], Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'app_user_edit', methods: ['PUT'])]
