@@ -54,14 +54,12 @@ class UserController extends AbstractController
             throw $this->createNotFoundException('Utilisateur non trouvé');
         }
 
-        // Vous pouvez utiliser le $user pour obtenir les détails de l'utilisateur
-        // Par exemple, $user->getFirstName(), $user->getEmail(), etc.
-
         return $this->render('user/show.html.twig', [
             'user' => $user,
         ]);
     }
 
+    // deprecated
     /*#[Route('', name: 'app_user_new', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function new(Request $request, UserPasswordHasherInterface $passwordHasher): Response
