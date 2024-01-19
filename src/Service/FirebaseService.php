@@ -8,16 +8,21 @@ use Kreait\Firebase\Factory;
 class FirebaseService
 {
     private $firebase;
+    private $auth;
 
     public function __construct(string $firebaseConfigPath)
     {
-        $this->firebase = (new Factory)
+
+        $this->auth = (new Factory)
             ->withServiceAccount($firebaseConfigPath)
-            ->create();
+            ->createAuth();
+        //$this->auth = $this->firebase->getAuth();
     }
 
     public function getAuth()
     {
-        return $this->firebase->getAuth();
+        //phpinfo(); die();
+
+        return $this->auth;
     }
 }

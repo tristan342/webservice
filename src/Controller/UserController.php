@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Service\FirebaseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -61,7 +62,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('', name: 'app_user_new', methods: ['POST'])]
+    /*#[Route('', name: 'app_user_new', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function new(Request $request, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -82,6 +83,41 @@ class UserController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Film créé avec succès.', 'data' => $data], Response::HTTP_CREATED);
+    }*/
+
+    #[Route('', name: 'app_user_new', methods: ['POST'])]
+    //#[IsGranted('ROLE_ADMIN')]
+    public function new(Request $request, FirebaseService $firebaseService): Response
+    {
+        // on récupère les paramètres de la requête
+        $request_data = $request->request;
+
+        //var_dump($request->request->get('username'));die();
+
+        try {
+            $userProperties = [
+                'email' => $request_data->get('email'),
+                'password' => $request_data->get('password')
+            ];
+
+            // Créer un utilisateur dans votre base de données locale
+            $user = new User();
+            $user->setFirstName($request_data->get('firstName') ?? '');
+            $user->setLastName($request_data->get('lastName') ?? '');
+            $user->setEmail($request_data->get('email'));
+            // Définissez le mot de passe comme null ou comme un hash de base
+            // car l'authentification est gérée par Firebase
+            $user->setPassword(null);
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            $firebaseUser = $firebaseService->getAuth()->createUser($userProperties);
+
+            return new JsonResponse(['message' => 'Utilisateur créé avec succès.'], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
     }
 
     #[Route('/{id}', name: 'app_user_edit', methods: ['PUT'])]

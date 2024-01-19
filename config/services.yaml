@@ -22,9 +22,9 @@ services:
 
         # add more service definitions when explicit configuration is needed
         # please note that last definitions always *replace* previous ones
-        App\Service\FirebaseService:
-            arguments:
-                $firebaseConfigPath: '%kernel.project_dir%/config/firebase_credentials.json'
+    App\Service\FirebaseService:
+        arguments:
+            $firebaseConfigPath: '%kernel.project_dir%/config/firebase_credentials.json'
 
 
 security:
